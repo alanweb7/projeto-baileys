@@ -3,7 +3,7 @@ const {
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
 } = require('@whiskeysockets/baileys');
-const makeWaSocket = require('@whiskeysockets/baileys');
+const makeWaSocket = require('@whiskeysockets/baileys').default
 // const { 
 //   makeWASocket, 
 //   useMultiFileAuthState, 
