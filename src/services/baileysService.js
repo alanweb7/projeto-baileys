@@ -121,7 +121,7 @@ const Connection = async () => {
       //--------------------
 
       // MENSAGEM DE BOAS VINDAS (TEXO COM IMAGEM)
-      if (textResponse.query === 'Mande o PDF') {
+      if (textResponse.query === '"Mande o PDF"') {
         await SendMessage(jid, {
           image: {
             url: '../assets/images/ebook-default.jpg'
