@@ -15,8 +15,8 @@ let isConnecting = false;
 let socket = null;
 
 
-const Update = (sock) => {
-  sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
+const Update = (socket) => {
+  socket.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     if (qr) {
       console.log('CHATBOT - Qrcode: ', qr);
     };
