@@ -6,7 +6,7 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 
-const PORTA = process.env.PORT || 3000;
+const PORTA = 4000;
 const SESSIONS_PATH = path.resolve(__dirname, '../Sessions');
 
 const app = express();
@@ -87,7 +87,7 @@ async function iniciarConexao() {
     socketBaileys = makeWaSocket(config);
     socketBaileys.auth = { saveCreds }; // para salvar credenciais depois
 
-    // atualizarConexao(socketBaileys);
+    atualizarConexao(socketBaileys);
 
     // Exemplo simples: logar mensagens recebidas
     socketBaileys.ev.on('messages.upsert', ({ messages, type }) => {
@@ -111,9 +111,11 @@ app.get('/status', (req, res) => {
   res.json({ conectado: socketBaileys !== null && !estaConectando });
 });
 
-module.exports = { iniciarConexao };
-
 // Inicializa servidor e conexão Baileys
 server.listen(PORTA, () => {
   console.log(`Servidor rodando na porta: ${PORTA}`);
+  iniciarConexao();
 });
+
+
+module.exports = { iniciarConexao };
