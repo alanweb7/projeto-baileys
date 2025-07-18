@@ -1,5 +1,5 @@
 // src/services/baileysService.js
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const logger = require('../utils/logger');
 const path = require('path');
