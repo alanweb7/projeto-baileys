@@ -28,6 +28,7 @@ app.get('/api/queues/status', queueStatus);
 // seriço de conexão ao beikleys
 app.get('/api/conn/qrcode', connectBaileys);
 
+ 
 
 const PORT = process.env.PORT || 3000;
 
