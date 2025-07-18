@@ -9,9 +9,35 @@ const fs = require('fs');
 const path = require('path');
 const logger = require('../utils/logger');
 
+
 let currentQR = null;
 let isConnecting = false;
 let socket = null;
+
+
+const Update = (sock) => {
+  sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
+    if (qr) {
+      console.log('CHATBOT - Qrcode: ', qr);
+    };
+    if (connection === 'close') {
+      const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
+      if (Reconnect) Connection()
+      console.log(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
+      if (Reconnect === false) {
+        fs.rmSync(Path, { recursive: true, force: true });
+        const removeAuth = Path
+        unlink(removeAuth, err => {
+          if (err) throw err
+        })
+      }
+    }
+    if (connection === 'open') {
+      console.log('CHATBOT - CONECTADO')
+    }
+  })
+}
+
 
 const connectBaileys = async () => {
   if (isConnecting) return;
@@ -88,6 +114,7 @@ const connectBaileys = async () => {
 };
 
 module.exports = {
+  Update,
   connectBaileys,
   getCurrentQR: () => currentQR,
   getSocket: () => socket,
