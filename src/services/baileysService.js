@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
+const { unlink, existsSync, mkdirSync } = require('fs')
 
 const pastaSessao = path.resolve(__dirname, '../../Sessions');
 let socketBaileys = null;
