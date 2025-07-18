@@ -14,11 +14,11 @@ const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
 
 
-const fs = require('fs');
+// const fs = require('fs');
 const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
-const { unlink, existsSync, mkdirSync } = require('fs')
+const { unlink, existsSync, mkdirSync, fs } = require('fs')
 
 const pastaSessao = path.resolve(__dirname, '../../Sessions');
 let socketBaileys = null;
@@ -64,7 +64,7 @@ const Connection = async () => {
   const config = {
     auth: state,
     logger: P({ level: 'error' }),
-    printQRInTerminal: true,
+    // printQRInTerminal: true,
     version,
     connectTimeoutMs: 60_000,
     async getMessage(key) {
