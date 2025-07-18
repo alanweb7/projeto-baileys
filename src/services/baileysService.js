@@ -113,19 +113,17 @@ const Connection = async () => {
 
       } else if (messageType === "conversation") {
         textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.conversation)], 'pt-BR');
-
       }
 
-
-      await SendMessage(jid, { text: "Oie" });
+      // await SendMessage(jid, { text: "Oie" });
 
       //--------------------
 
       // MENSAGEM DE BOAS VINDAS (TEXO COM IMAGEM)
-      if (textResponse === 'Iniciando seu atendimento...') {
+      if (textResponse.query === 'Mande o PDF') {
         await SendMessage(jid, {
           image: {
-            url: './image/robert.jpg'
+            url: '../assets/images/ebook-default.jpg'
           },
           caption: `Olá ${nomeUsuario}, ${saudacao} \nSeja muito bem-vindo ao assistente virtual do *Canal eConhecimento*.\n\n` +
             "Digite o *número* referente a opção desejada:\n\n" +
