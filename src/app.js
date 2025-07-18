@@ -13,7 +13,7 @@ const helmet = require('helmet');
 const { validateMessage } = require('./middleware/validation');
 const { sendMessage, receiveMessages } = require('./controllers/messageController');
 const { queueStatus } = require('./controllers/queueController');
-const { connectBaileys } = require('./services/baileysService');
+const { connectBaileys, getCurrentQR } = require('./services/baileysService');
 
 const app = express();
 
@@ -26,7 +26,14 @@ app.get('/api/messages/receive/:queueName', receiveMessages);
 app.get('/api/queues/status', queueStatus);
 
 // seriço de conexão ao beikleys
-app.get('/api/conn/qrcode', connectBaileys);
+app.get('/api/conn/qrcode', (req, res) => {
+  const qr = getCurrentQR();
+  if (qr) {
+    res.json({ success: true, qr });
+  } else {
+    res.json({ success: false, message: 'QR Code não disponível.' });
+  }
+});
 
 
 const PORT = process.env.PORT || 3000;
