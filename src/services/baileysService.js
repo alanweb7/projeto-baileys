@@ -1,78 +1,94 @@
 // src/services/baileysService.js
-const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
-const { Boom } = require('@hapi/boom');
+const {
+  makeWASocket,
+  useMultiFileAuthState,
+  DisconnectReason
+} = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
-const logger = require('../utils/logger');
+const fs = require('fs');
 const path = require('path');
+const logger = require('../utils/logger');
 
 let currentQR = null;
-let isConnecting = false; // Flag para evitar múltiplas conexões
+let isConnecting = false;
+let socket = null;
 
 const connectBaileys = async () => {
   if (isConnecting) return;
   isConnecting = true;
 
-  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
-  const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: false,
-  });
+  try {
+    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    socket = makeWASocket({
+      auth: state,
+      printQRInTerminal: false,
+    });
 
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
-    if (type === 'notify') {
-      messages.forEach((msg) => {
-        const from = msg.key.remoteJid;
-        const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+    socket.ev.on('creds.update', saveCreds);
 
-        logger.info(`📩 Mensagem de ${from}: ${body}`);
-      });
-    }
-  });
+    socket.ev.on('messages.upsert', ({ messages, type }) => {
+      if (type === 'notify') {
+        messages.forEach((msg) => {
+          const from = msg.key.remoteJid;
+          const body =
+            msg.message?.conversation ||
+            msg.message?.extendedTextMessage?.text;
 
-  sock.ev.on('connection.update', (update) => {
-    const { connection, qr } = update;
-    if (qr) {
-      currentQR = qr; // <-- Salva o QR
-      console.log('📱 Escaneie o QR Code com o WhatsApp:');
-      qrcode.generate(qr, { small: true });
-    }
+          if (body) {
+            logger.info(`📩 Mensagem de ${from}: ${body}`);
+          }
+        });
+      }
+    });
 
-    if (connection === 'open') {
-      console.log('✅ Conectado ao WhatsApp com sucesso!!');
-      currentQR = null; // Limpa o QR após conexão
-    }
+    socket.ev.on('connection.update', async (update) => {
+      const { connection, qr, lastDisconnect } = update;
 
-    if (connection === 'close') {
-      const reason = update.lastDisconnect?.error?.output?.statusCode;
-      const isLoggedOut = reason === DisconnectReason.loggedOut;
-      const isRestartRequired = reason === DisconnectReason.restartRequired;
-      const shouldReconnect = !isLoggedOut && !isRestartRequired;
+      if (qr) {
+        currentQR = qr;
+        console.log('📱 Escaneie o QR Code com o WhatsApp:');
+        qrcode.generate(qr, { small: true });
+      }
 
-      console.log(`🔌 Conexão encerrada. Código: ${reason}.`, shouldReconnect ? 'Reconectando...' : 'Não será reconectado.');
-
-      if (reason === 515) {
-        const fs = require('fs');
-        const authPath = path.resolve(__dirname, '../../auth_info_baileys');
-        fs.rmSync(authPath, { recursive: true, force: true });
-        console.warn('🧹 Sessão corrompida detectada. Sessão removida. Escaneie um novo QR.');
+      if (connection === 'open') {
+        console.log('✅ Conectado ao WhatsApp com sucesso!');
+        currentQR = null;
         isConnecting = false;
-        return;
       }
 
-      if (shouldReconnect) {
-        setTimeout(() => connectBaileys(), 3000); // espera antes de reconectar
-      } else {
-        isConnecting = false; // libera flag se não for reconectar
+      if (connection === 'close') {
+        const code = lastDisconnect?.error?.output?.statusCode;
+        const isLoggedOut = code === DisconnectReason.loggedOut;
+        const isRestartRequired = code === DisconnectReason.restartRequired;
+        const isCorruptedSession = code === 515;
+
+        console.warn(`🔌 Conexão encerrada. Código: ${code}`);
+
+        if (isCorruptedSession) {
+          const authPath = path.resolve(__dirname, '../../auth_info_baileys');
+          fs.rmSync(authPath, { recursive: true, force: true });
+          console.warn('🧹 Sessão corrompida. Pasta auth removida. Escaneie um novo QR.');
+          isConnecting = false;
+          return;
+        }
+
+        if (!isLoggedOut && !isRestartRequired) {
+          console.log('🔁 Tentando reconectar...');
+          setTimeout(() => connectBaileys(), 3000);
+        } else {
+          console.log('⚠️ Reconexão não será feita.');
+          isConnecting = false;
+        }
       }
-    }
-
-  });
-
-  sock.ev.on('creds.update', saveCreds);
+    });
+  } catch (error) {
+    logger.error('Erro ao conectar com o WhatsApp:', error);
+    isConnecting = false;
+  }
 };
 
-// Exporta a função de conexão e o QR atual
 module.exports = {
   connectBaileys,
   getCurrentQR: () => currentQR,
+  getSocket: () => socket,
 };
