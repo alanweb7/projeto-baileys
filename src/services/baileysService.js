@@ -13,11 +13,13 @@ const makeWaSocket = require('@whiskeysockets/baileys').default
 const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
 
+
 const fs = require('fs');
+const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
 
-const pastaSessao = Path.resolve(__dirname, '../../Sessions');
+const pastaSessao = path.resolve(__dirname, '../../Sessions');
 let socketBaileys = null;
 let estaConectando = false;
 
