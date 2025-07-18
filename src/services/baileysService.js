@@ -14,7 +14,7 @@ const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
 
 const fs = require('fs');
-const Path = require('Sessions');
+const Path = 'Sessions';
 const P = require('pino');
 
 const pastaSessao = Path.resolve(__dirname, '../../Sessions');
