@@ -14,6 +14,7 @@ const { validateMessage } = require('./middleware/validation');
 const { sendMessage, receiveMessages } = require('./controllers/messageController');
 const { queueStatus } = require('./controllers/queueController');
 const { connectBaileys, getCurrentQR, iniciarConexao } = require('./services/baileysService');
+const baileysService = require('./services/baileysService');
 
 const app = express();
 
@@ -45,6 +46,15 @@ app.get('/api/conn/qrcode', async (req, res) => {
   // if (!qr) return res.status(204).send(); // No QR available
   // res.json({ qr });
   res.json({ qr });
+});
+
+app.get('/api/conn/start-whatsapp', async (req, res) => {
+  await baileysService.iniciarConexao();
+  res.json({ status: 'Iniciando conexão com WhatsApp...' });
+});
+
+app.get('/api/conn/status-whatsapp', (req, res) => {
+  res.json(baileysService.statusConexao());
 });
 
 

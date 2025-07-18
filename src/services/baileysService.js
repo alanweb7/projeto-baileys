@@ -1,58 +1,98 @@
-// src/services/baileysService.js
-const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
-const { Boom } = require('@hapi/boom');
-const qrcode = require('qrcode-terminal');
-const logger = require('../utils/logger');
+const {
+  default: makeWASocket,
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+  useMultiFileAuthState,
+} = require('@whiskeysockets/baileys');
+const fs = require('fs');
 const path = require('path');
+const P = require('pino');
 
-let currentQR = null;
+const pastaSessao = path.resolve(__dirname, '../../Sessions');
+let socketBaileys = null;
+let estaConectando = false;
 
-const connectBaileys = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+async function iniciarConexao() {
+  if (estaConectando || socketBaileys) return;
+  estaConectando = true;
 
-  const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: false,
-  });
+  try {
+    if (!fs.existsSync(pastaSessao)) {
+      fs.mkdirSync(pastaSessao, { recursive: true });
+    }
 
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
-    if (type === 'notify') {
-      messages.forEach((msg) => {
+    const { version } = await fetchLatestBaileysVersion();
+    const { state, saveCreds } = await useMultiFileAuthState(pastaSessao);
+
+    socketBaileys = makeWASocket({
+      version,
+      logger: P({ level: 'silent' }),
+      printQRInTerminal: true,
+      auth: state,
+      getMessage: async () => ({ conversation: 'Mensagem padrão' }),
+    });
+
+    socketBaileys.ev.on('creds.update', saveCreds);
+
+    socketBaileys.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
+      if (qr) {
+        console.log('🧾 QR gerado:', qr);
+      }
+
+      if (connection === 'open') {
+        console.log('✅ Conectado ao WhatsApp!');
+        estaConectando = false;
+      }
+
+      if (connection === 'close') {
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+
+        console.log('🔌 Conexão encerrada:', statusCode);
+
+        // Se for logout ou falha de sessão, limpa credenciais
+        if (statusCode === DisconnectReason.loggedOut || statusCode === 515) {
+          if (fs.existsSync(pastaSessao)) {
+            fs.rmSync(pastaSessao, { recursive: true, force: true });
+            console.log('🧹 Sessão removida. Será necessário escanear QR novamente.');
+          }
+          socketBaileys = null;
+          estaConectando = false;
+        } else {
+          // Tenta reconectar
+          socketBaileys = null;
+          estaConectando = false;
+          iniciarConexao();
+        }
+      }
+    });
+
+    socketBaileys.ev.on('messages.upsert', async ({ messages }) => {
+      for (let msg of messages) {
         const from = msg.key.remoteJid;
         const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-
-        logger.info(`📩 Mensagem de ${from}: ${body}`);
-      });
-    }
-  });
-
-  sock.ev.on('connection.update', (update) => {
-    const { connection, qr } = update;
-    if (qr) {
-      currentQR = qr; // <-- Salva o QR
-      console.log('📱 Escaneie o QR Code com o WhatsApp:');
-      qrcode.generate(qr, { small: true });
-    }
-
-    if (connection === 'open') {
-      console.log('✅ Conectado ao WhatsApp com sucesso!!');
-      currentQR = null; // Limpa o QR após conexão
-    }
-
-    if (connection === 'close') {
-      const shouldReconnect = update.lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log('🔌 Conexão encerrada.', shouldReconnect ? 'Reconectando...' : 'Usuário deslogado.');
-      if (shouldReconnect) {
-        connectBaileys();
+        console.log(`📩 Mensagem recebida de ${from}: ${body}`);
       }
-    }
-  });
+    });
 
-  sock.ev.on('creds.update', saveCreds);
-};
+  } catch (err) {
+    console.error('❌ Erro ao conectar ao WhatsApp:', err);
+    estaConectando = false;
+  }
+}
 
-// Exporta a função de conexão e o QR atual
+function statusConexao() {
+  return {
+    conectado: !!socketBaileys,
+    emConexao: estaConectando,
+  };
+}
+
+function getSocket() {
+  return socketBaileys;
+}
+
 module.exports = {
-  connectBaileys,
-  getCurrentQR: () => currentQR,
+  iniciarConexao,
+  statusConexao,
+  getSocket,
 };
