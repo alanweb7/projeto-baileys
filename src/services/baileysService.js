@@ -115,7 +115,7 @@ const Connection = async () => {
         textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.conversation)], 'pt-BR');
       }
 
-      console.log("Texto da query: ", textResponse.query);
+      console.log("Texto da query: ", textResponse);
       // await SendMessage(jid, { text: "Oie" });
 
       //--------------------
