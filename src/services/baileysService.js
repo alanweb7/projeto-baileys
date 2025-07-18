@@ -1,9 +1,14 @@
 const {
-  default: makeWASocket,
   DisconnectReason,
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
 } = require('@whiskeysockets/baileys');
+const makeWaSocket = require('@whiskeysockets/baileys');
+// const { 
+//   makeWASocket, 
+//   useMultiFileAuthState, 
+//   DisconnectReason 
+// } = require('@whiskeysockets/baileys');
 
 const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
