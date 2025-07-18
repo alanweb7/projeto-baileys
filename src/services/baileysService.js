@@ -87,7 +87,7 @@ async function iniciarConexao() {
     socketBaileys = makeWaSocket(config);
     socketBaileys.auth = { saveCreds }; // para salvar credenciais depois
 
-    atualizarConexao(socketBaileys);
+    // atualizarConexao(socketBaileys);
 
     // Exemplo simples: logar mensagens recebidas
     socketBaileys.ev.on('messages.upsert', ({ messages, type }) => {
