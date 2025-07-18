@@ -26,7 +26,8 @@ let estaConectando = false;
 const Update = (sock) => {
   sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     if (qr) {
-      console.log('CHATBOT - Qrcode: ', qr);
+      console.log('CHATBOT - Qrcode: ');
+      qrcode.generate(qr, { small: true });
     };
     if (connection === 'close') {
       const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
@@ -62,7 +63,7 @@ async function iniciarConexao() {
     const config = {
       auth: state,
       logger: P({ level: 'error' }),
-      printQRInTerminal: true,
+      // printQRInTerminal: true,
       version,
       connectTimeoutMs: 60_000,
       async getMessage(key) {
