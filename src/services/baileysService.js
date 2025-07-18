@@ -5,18 +5,14 @@ const logger = require('../utils/logger');
 const path = require('path');
 
 const connectBaileys = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, '../auth'));
+  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: true, // QR será exibido no terminal
-    logger: {
-      info: (msg) => logger.info(msg),
-      error: (msg) => logger.error(msg),
-      warn: (msg) => logger.warn(msg),
-      debug: () => {}, // opcional
-    },
+    printQRInTerminal: false, // vamos imprimir manualmente
+    logger: P({ level: 'silent' }) // menos poluição no terminal
   });
+
 
   sock.ev.on('messages.upsert', ({ messages, type }) => {
     if (type === 'notify') {
@@ -29,26 +25,28 @@ const connectBaileys = async () => {
     }
   });
 
+  // Exibe QR Code quando necessário
   sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect } = update;
+    const { connection, qr } = update;
+    if (qr) {
+      console.log('📱 Escaneie o QR Code com o WhatsApp:');
+      qrcode.generate(qr, { small: true });
+    }
+
+    if (connection === 'open') {
+      console.log('✅ Conectado ao WhatsApp com sucesso!!');
+    }
 
     if (connection === 'close') {
-      const shouldReconnect =
-        lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-
-      logger.warn('🔌 Conexão encerrada. ' +
-        (shouldReconnect ? 'Tentando reconectar...' : 'Usuário deslogado.')
-      );
-
+      const shouldReconnect = update.lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+      console.log('🔌 Conexão encerrada.', shouldReconnect ? 'Reconectando...' : 'Usuário deslogado.');
       if (shouldReconnect) {
-        connectBaileys(); // reconecta se não foi logout
+        startBaileys();
       }
-    } else if (connection === 'open') {
-      logger.info('✅ Conectado ao WhatsApp com sucesso!');
     }
   });
 
   sock.ev.on('creds.update', saveCreds);
-};
+}
 
 module.exports = { connectBaileys };
