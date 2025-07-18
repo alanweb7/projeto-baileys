@@ -4,6 +4,11 @@ const {
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
 } = require('@whiskeysockets/baileys');
+
+const qrcode = require('qrcode-terminal');
+const logger = require('../utils/logger');
+
+
 const fs = require('fs');
 const path = require('path');
 const P = require('pino');
@@ -36,7 +41,8 @@ async function iniciarConexao() {
 
     socketBaileys.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
       if (qr) {
-        console.log('🧾 QR gerado:', qr);
+        console.log('🧾 Escaneie o QRcode:');
+        qrcode.generate(qr, { small: true });
       }
 
       if (connection === 'open') {
@@ -71,6 +77,7 @@ async function iniciarConexao() {
         const from = msg.key.remoteJid;
         const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
         console.log(`📩 Mensagem recebida de ${from}: ${body}`);
+        logger.info(`📩 Mensagem de ${from}: ${body}`);
       }
     });
 
