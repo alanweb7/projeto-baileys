@@ -1,15 +1,10 @@
+//src/services/baileysService.js
 const {
   DisconnectReason,
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
 } = require('@whiskeysockets/baileys');
 const makeWaSocket = require('@whiskeysockets/baileys').default
-// const { 
-//   makeWASocket, 
-//   useMultiFileAuthState, 
-//   DisconnectReason 
-// } = require('@whiskeysockets/baileys');
-
 const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
 
@@ -18,9 +13,11 @@ const logger = require('../utils/logger');
 const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
-const { unlink, existsSync, mkdirSync, fs } = require('fs')
+const fs = require('fs');
+const { unlink, existsSync, mkdirSync } = require('fs')
 
 const pastaSessao = path.resolve(__dirname, '../../Sessions');
+
 let socketBaileys = null;
 let estaConectando = false;
 
@@ -35,8 +32,8 @@ const Update = (sock) => {
       const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
       if (Reconnect) Connection();
 
-      console.log(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
-
+      logger.info(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
+   
       if (Reconnect === false) {
         fs.rmSync(Path, { recursive: true, force: true });
         const removeAuth = Path
@@ -46,7 +43,8 @@ const Update = (sock) => {
       }
     }
     if (connection === 'open') {
-      console.log('CHATBOT - CONECTADO')
+      logger.info('CHATBOT - CONECTADO');
+      socketBaileys = true;
     }
   })
 }
@@ -65,6 +63,7 @@ const Connection = async () => {
     auth: state,
     logger: P({ level: 'error' }),
     // printQRInTerminal: true,
+
     version,
     connectTimeoutMs: 60_000,
     async getMessage(key) {
@@ -78,8 +77,6 @@ const Connection = async () => {
 
   sock.ev.on('creds.update', saveCreds);
 
-
-
   const SendMessage = async (jid, msg) => {
     await sock.presenceSubscribe(jid)
     await delay(1500)
@@ -88,7 +85,6 @@ const Connection = async () => {
     await sock.sendPresenceUpdate('paused', jid)
     return await sock.sendMessage(jid, msg)
   }
-
 
 
   ////SAUDAÇÃO
@@ -103,8 +99,6 @@ const Connection = async () => {
       return 'boa noite!'
     }
   }
-
-
 
   /////////////////////INICIO DAS FUNÇÕES/////////////////////
 
@@ -153,7 +147,6 @@ const Connection = async () => {
           .catch(err => console.log('ERROR: ', err))
 
       }
-
 
       //--------------------
 
@@ -259,121 +252,11 @@ const Connection = async () => {
 
       //--------------------
 
-      // MENSAGEM DE CONTATO
-      if (textResponse === 'Aqui está o contato do Marcos Monteiro 👇🏼😉') {
-        const vcard = 'BEGIN:VCARD\n' // metadata of the contact card
-          + 'VERSION:3.0\n'
-          + 'FN:Marcos Monteiro\n' // full name
-          + 'ORG:Marcos Monteiro;\n' // the organization of the contact
-          + 'TEL;type=CELL;type=VOICE;waid=5585985282207:+55 85 98528 2207\n' // WhatsApp ID + phone number
-          + 'END:VCARD';
-
-        await SendMessage(jid, {
-          contacts: {
-            displayName: 'Marcos Monteiro',
-            contacts: [{ vcard }]
-
-          }
-
-        });
-
-        await SendMessage(jid, {
-          text: '*0* - Voltar ao menu'
-
-        })
-
-          .then(result => console.log('RESULT: ', result))
-          .catch(err => console.log('ERROR: ', err));
-
-      }
-
-
     }
 
   });
 
 };
-
-
-async function iniciarConexao() {
-  if (estaConectando || socketBaileys) return;
-  estaConectando = true;
-
-  try {
-    if (!fs.existsSync(pastaSessao)) {
-      fs.mkdirSync(pastaSessao, { recursive: true });
-    }
-
-    const { version } = await fetchLatestBaileysVersion();
-    const { state, saveCreds } = await useMultiFileAuthState(pastaSessao);
-
-    const config = {
-      auth: state,
-      logger: P({ level: 'error' }),
-      // printQRInTerminal: true,
-      version,
-      connectTimeoutMs: 60_000,
-      async getMessage(key) {
-        return { conversation: 'Chatbot' };
-      },
-    }
-
-    const socketBaileys = makeWaSocket(config, { auth: state });
-    Update(socketBaileys.ev);
-
-    // socketBaileys.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
-    //   if (qr) {
-    //     console.log('🧾 Escaneie o QRcode:');
-    //     qrcode.generate(qr, { small: true });
-    //   }
-
-    //   if (connection === 'open') {
-    //     console.log('✅ Conectado ao WhatsApp!');
-    //     estaConectando = false;
-    //   }
-
-    //   if (connection === 'close') {
-    //     const statusCode = lastDisconnect?.error?.output?.statusCode;
-
-    //     console.log('🔌 Conexão encerrada:', statusCode);
-
-    //     // Se for logout ou falha de sessão, limpa credenciais
-    //     if (statusCode === DisconnectReason.loggedOut || statusCode === 515) {
-    //       if (fs.existsSync(pastaSessao)) {
-    //         fs.rmSync(pastaSessao, { recursive: true, force: true });
-    //         console.log('🧹 Sessão removida. Será necessário escanear QR novamente.');
-    //       }
-    //       socketBaileys = null;
-    //       estaConectando = false;
-    //     } else {
-    //       // Tenta reconectar
-    //       socketBaileys = null;
-    //       estaConectando = false;
-    //       iniciarConexao();
-    //     }
-    //   }
-    // });
-
-    socketBaileys.ev.on('creds.update', saveCreds);
-
-    socketBaileys.ev.on('messages.upsert', async ({ messages }) => {
-      for (let msg of messages) {
-        const from = msg.key.remoteJid;
-        const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-        console.log(`📩 Mensagem recebida de ${from}: ${body}`);
-        logger.info(`📩 Mensagem de ${from}: ${body}`);
-      }
-    });
-
-  } catch (err) {
-    console.error('❌ Erro ao conectar ao WhatsApp:', err);
-    estaConectando = false;
-  }
-}
-
-
-
-
 
 
 function statusConexao() {
@@ -389,7 +272,6 @@ function getSocket() {
 
 module.exports = {
   Connection,
-  iniciarConexao,
   statusConexao,
   getSocket,
 };
