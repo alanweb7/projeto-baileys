@@ -14,7 +14,7 @@ const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
 const fs = require('fs');
-const { unlink, existsSync, mkdirSync } = require('fs')
+const { existsSync, mkdirSync } = require('fs');
 
 const pastaSessao = path.resolve(__dirname, '../../Sessions');
 
@@ -33,13 +33,12 @@ const Update = (sock) => {
       if (Reconnect) Connection();
 
       logger.info(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
-   
+
       if (Reconnect === false) {
-        fs.rmSync(Path, { recursive: true, force: true });
-        const removeAuth = Path
-        unlink(removeAuth, err => {
-          if (err) throw err
-        })
+        const Path = 'Sessions'; // ou outro caminho real
+        if (existsSync(Path)) {
+          fs.rmSync(Path, { recursive: true, force: true });
+        }
       }
     }
     if (connection === 'open') {
