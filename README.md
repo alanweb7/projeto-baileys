@@ -108,6 +108,7 @@ redis-cli ping
 git clone https://github.com/alanweb7/projeto-baileys.git
 cd projeto-baileys
 
+
 # Instale dependências
 npm install
 
