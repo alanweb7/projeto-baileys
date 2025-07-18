@@ -269,7 +269,7 @@ async function executeQueries(projectId, sessionId, queries, languageCode) {
       };
       console.log('Enviando Resposta');
       console.log(intentResponse);
-      return `${intentResponse}`;
+      return intentResponse;
     } catch (error) {
       console.log(error);
     }
