@@ -1,6 +1,4 @@
 // src/services/baileysService.js
-// src/app.js ou src/server.js (arquivo principal)
-
 const { default: makeWaSocket, delay, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const P = require('pino');
 const fs = require('fs');
@@ -113,11 +111,9 @@ app.get('/status', (req, res) => {
   res.json({ conectado: socketBaileys !== null && !estaConectando });
 });
 
+module.exports = { iniciarConexao };
+
 // Inicializa servidor e conexão Baileys
 server.listen(PORTA, () => {
   console.log(`Servidor rodando na porta: ${PORTA}`);
-  iniciarConexao();
 });
-
-
-module.exports = { iniciarConexao };
