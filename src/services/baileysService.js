@@ -4,13 +4,11 @@ const { delay, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthStat
 const P = require('pino')
 const { unlink, existsSync, mkdirSync } = require('fs')
 const express = require('express');
-const { body, validationResult } = require('express-validator');
 const http = require('http');
 const port = process.env.PORT || 9002;
 const app = express();
 const server = http.createServer(app);
 const Path = 'Sessions';
-const request = require('request')
 
 const fs = require('fs')
 app.use(express.json());
