@@ -13,7 +13,7 @@ const helmet = require('helmet');
 const { validateMessage } = require('./middleware/validation');
 const { sendMessage, receiveMessages } = require('./controllers/messageController');
 const { queueStatus } = require('./controllers/queueController');
-const { connectBaileys, getCurrentQR, iniciarConexao } = require('./services/baileysService');
+const { connectBaileys, getCurrentQR, iniciarConexao, Connection } = require('./services/baileysService');
 const baileysService = require('./services/baileysService');
 
 const app = express();
