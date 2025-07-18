@@ -120,7 +120,8 @@ const Connection = async () => {
 
       }
 
-      await SendMessage(jid, { text: textResponse });
+
+      await SendMessage(jid, { text: "Oie" });
 
       //--------------------
 
@@ -256,6 +257,29 @@ const Connection = async () => {
   });
 
 };
+
+
+async function executeQueries(projectId, sessionId, queries, languageCode) {
+  let context;
+  let intentResponse;
+  for (const query of queries) {
+    try {
+      console.log(`Pergunta: ${query}`);
+      intentResponse = {
+        projectId,
+        sessionId,
+        query,
+        context,
+        languageCode
+      };
+      console.log('Enviando Resposta');
+      console.log(intentResponse);
+      return `${intentResponse}`;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
 
 
 function statusConexao() {
