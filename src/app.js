@@ -26,9 +26,17 @@ app.get('/api/messages/receive/:queueName', receiveMessages);
 app.get('/api/queues/status', queueStatus);
 
 // seriço de conexão ao beikleys
-app.get('/api/conn/qrcode', connectBaileys);
+app.get('/api/conn/qrcode', async (req, res) => {
+  await connectBaileys();
 
- 
+  const qr = getCurrentQR();
+  if (qr) {
+    res.json({ success: true, qr });
+  } else {
+    res.json({ success: false, message: 'QR Code não disponível.' });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 

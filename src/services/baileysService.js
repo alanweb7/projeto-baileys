@@ -28,7 +28,7 @@ const connectBaileys = async () => {
       });
     }
   });
- 
+
   sock.ev.on('connection.update', (update) => {
     const { connection, qr } = update;
     if (qr) {
