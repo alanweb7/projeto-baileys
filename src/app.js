@@ -39,6 +39,7 @@ app.get('/api/queues/status', queueStatus);
 
 
 app.get('/api/conn/qrcode', async (req, res) => {
+  const conn = await connectBaileys();
   const qr =  await getCurrentQR();
   if (!qr) return res.status(204).send(); // No QR available
   res.json({ qr });
