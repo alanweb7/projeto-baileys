@@ -124,7 +124,7 @@ const Connection = async () => {
       if (textResponse.query === '"Mande o PDF"') {
         await SendMessage(jid, {
           image: {
-            url: '../assets/images/ebook-default.jpg'
+            url: path.resolve(__dirname, '../assets/images/ebook-default.jpg')
           },
           caption: `Olá ${nomeUsuario}, ${saudacao} \nSeja muito bem-vindo ao assistente virtual do *Canal eConhecimento*.\n\n` +
             "Digite o *número* referente a opção desejada:\n\n" +
