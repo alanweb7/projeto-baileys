@@ -5,11 +5,14 @@ const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
 const path = require('path');
 
-let currentQR = null; // <-- Aqui no topo (escopo do módulo)
+let currentQR = null;
+let isConnecting = false; // Flag para evitar múltiplas conexões
 
 const connectBaileys = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+  if (isConnecting) return;
+  isConnecting = true;
 
+  const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
   const sock = makeWASocket({
     auth: state,
     printQRInTerminal: false,

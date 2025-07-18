@@ -26,7 +26,9 @@ app.get('/api/messages/receive/:queueName', receiveMessages);
 app.get('/api/queues/status', queueStatus);
 
 // seriço de conexão ao beikleys
-app.get('/api/conn/qrcode', (req, res) => {
+app.get('/api/conn/qrcode', async (req, res) => {
+  await connectBaileys(); // Garante que conecte se não conectou ainda
+
   const qr = getCurrentQR();
   if (qr) {
     res.json({ success: true, qr });
