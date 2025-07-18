@@ -13,7 +13,7 @@ const helmet = require('helmet');
 const { validateMessage } = require('./middleware/validation');
 const { sendMessage, receiveMessages } = require('./controllers/messageController');
 const { queueStatus } = require('./controllers/queueController');
-const { connectBaileys, getCurrentQR, Update } = require('./services/baileysService');
+const { connectBaileys, getCurrentQR, iniciarConexao } = require('./services/baileysService');
 
 const app = express();
 
@@ -39,7 +39,7 @@ app.get('/api/queues/status', queueStatus);
 
 
 app.get('/api/conn/qrcode', async (req, res) => {
-  const conn = await Update();
+  const conn = await iniciarConexao();
   const qr =  "Inicializou...";
   // const qr =  await getCurrentQR();
   // if (!qr) return res.status(204).send(); // No QR available
