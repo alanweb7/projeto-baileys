@@ -13,6 +13,7 @@ const helmet = require('helmet');
 const { validateMessage } = require('./middleware/validation');
 const { sendMessage, receiveMessages } = require('./controllers/messageController');
 const { queueStatus } = require('./controllers/queueController');
+const { connectBaileys } = require('./services/baileysService');
 
 const app = express();
 
@@ -23,6 +24,10 @@ app.use(express.json());
 app.post('/api/messages/send', validateMessage, sendMessage);
 app.get('/api/messages/receive/:queueName', receiveMessages);
 app.get('/api/queues/status', queueStatus);
+
+// seriço de conexão ao beikleys
+app.get('/api/conn/qrcode', connectBaileys);
+
 
 const PORT = process.env.PORT || 3000;
 
