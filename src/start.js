@@ -10,7 +10,6 @@ async function startBaileys() {
   const sock = makeWASocket({
     auth: state,
     printQRInTerminal: false, // vamos imprimir manualmente
-    logger: P({ level: 'silent' }) // menos poluição no terminal
   });
 
 
