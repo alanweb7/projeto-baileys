@@ -1,9 +1,6 @@
-// CONTRIBUA COM O CONHECIMENTO...
-// CONSIDERE FAZER UMA COLABORAÇÃO VIA PIX.
-// CHAVE PIX - 85985282207
+
 const makeWaSocket = require('@whiskeysockets/baileys').default
 const { delay, DisconnectReason, fetchLatestBaileysVersion, useMultiFileAuthState  } = require('@whiskeysockets/baileys')
-const dialogflow = require('@google-cloud/dialogflow');
 const P = require('pino')
 const { unlink, existsSync, mkdirSync } = require('fs')
 const express = require('express');
@@ -21,53 +18,6 @@ app.use(express.urlencoded({
   extended: true
 }));
 
-/////INICIO DIALOGFLOW
-const sessionClient = new dialogflow.SessionsClient({ keyFilename: "SUA-CHAVE.json" });
-async function detectIntent(projectId, sessionId, query, contexts, languageCode) {
-const sessionPath = sessionClient.projectAgentSessionPath( projectId, sessionId);
-
-   // The text query request.
-   const request = {
-      session: sessionPath,
-      queryInput: {
-         text: {
-            text: query,
-            languageCode: languageCode,
-         },
-      },
-   };
-
-   if (contexts && contexts.length > 0) {
-      request.queryParams = {
-         contexts: contexts,
-      };
-   }
-
-   const responses = await sessionClient.detectIntent(request);
-   return responses[0];
-}
-
-async function executeQueries(projectId, sessionId, queries, languageCode) {
-   let context;
-   let intentResponse;
-   for (const query of queries) {
-      try {
-         console.log(`Pergunta: ${query}`);
-         intentResponse = await detectIntent(
-            projectId,
-            sessionId,
-            query,
-            context,
-            languageCode
-         );
-         console.log('Enviando Resposta');
-         console.log(intentResponse.queryResult.fulfillmentText);
-         return `${intentResponse.queryResult.fulfillmentText}`
-      } catch (error) {
-         console.log(error);
-      }
-   }
-} ////FIM DIALOGFLOW
 
 const Update = (sock) => {
    sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
