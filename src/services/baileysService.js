@@ -43,12 +43,29 @@ const connectBaileys = async () => {
     }
 
     if (connection === 'close') {
-      const shouldReconnect = update.lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-      console.log('🔌 Conexão encerrada.', shouldReconnect ? 'Reconectando...' : 'Usuário deslogado.');
+      const reason = update.lastDisconnect?.error?.output?.statusCode;
+      const isLoggedOut = reason === DisconnectReason.loggedOut;
+      const isRestartRequired = reason === DisconnectReason.restartRequired;
+      const shouldReconnect = !isLoggedOut && !isRestartRequired;
+
+      console.log(`🔌 Conexão encerrada. Código: ${reason}.`, shouldReconnect ? 'Reconectando...' : 'Não será reconectado.');
+
+      if (reason === 515) {
+        const fs = require('fs');
+        const authPath = path.resolve(__dirname, '../../auth_info_baileys');
+        fs.rmSync(authPath, { recursive: true, force: true });
+        console.warn('🧹 Sessão corrompida detectada. Sessão removida. Escaneie um novo QR.');
+        isConnecting = false;
+        return;
+      }
+
       if (shouldReconnect) {
-        connectBaileys();
+        setTimeout(() => connectBaileys(), 3000); // espera antes de reconectar
+      } else {
+        isConnecting = false; // libera flag se não for reconectar
       }
     }
+
   });
 
   sock.ev.on('creds.update', saveCreds);
