@@ -49,7 +49,7 @@ app.get('/api/conn/qrcode', async (req, res) => {
 });
 
 app.get('/api/conn/start-whatsapp', async (req, res) => {
-  await baileysService.iniciarConexao();
+  await baileysService.Connection();
   res.json({ status: 'Iniciando conexão com WhatsApp...' });
 });
 
