@@ -31,7 +31,7 @@ const Update = (sock) => {
     };
     if (connection === 'close') {
       const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
-      if (Reconnect) Connection()
+      if (Reconnect) iniciarConexao()
       console.log(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
       if (Reconnect === false) {
         fs.rmSync(Path, { recursive: true, force: true });
@@ -123,6 +123,11 @@ async function iniciarConexao() {
     estaConectando = false;
   }
 }
+
+
+
+
+
 
 function statusConexao() {
   return {
