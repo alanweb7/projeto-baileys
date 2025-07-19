@@ -45,20 +45,20 @@ const Update = (sock) => {
 }
 
 
-const Connection = async () => {
+const Connection = async (req) => {
   const { version } = await fetchLatestBaileysVersion()
 
   if (!existsSync(Path)) {
     mkdirSync(Path, { recursive: true });
   }
 
+  console.log("Instância: ", req);
   const { state, saveCreds } = await useMultiFileAuthState(Path)
 
   const config = {
     auth: state,
     logger: P({ level: 'error' }),
     // printQRInTerminal: true,
-
     version,
     connectTimeoutMs: 60_000,
     async getMessage(key) {

@@ -50,7 +50,7 @@ app.get('/api/conn/qrcode', async (req, res) => {
 
 app.get('/api/conn/start-whatsapp/:instanceName', async (req, res) => {
   const instance = req.params.instanceName;
-  // await baileysService.Connection(instance);
+  await baileysService.Connection(instance);
   res.json({ status: 'Iniciando conexão com WhatsApp...', instance });
 });
 
