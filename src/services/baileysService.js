@@ -12,17 +12,12 @@ const path = require('path');
 const P = require('pino');
 const fs = require('fs');
 
-
-
 const { unlink, existsSync, mkdirSync } = require('fs')
 const Path = 'Sessions';
-
 
 // const { existsSync, mkdirSync } = require('fs');
 
 const conectando = new Map();
-
-
 
 const Update = (sock) => {
    sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
