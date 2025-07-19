@@ -146,12 +146,14 @@ const Connection = async (channelId = 'default') => {
 
       // MENSAGEM DE TEXO COMUM
       if (triggerMsg === '"Enviando texto comum..."' || triggerMsg === 'Enviando texto comum...') {
-        await SendMessage(jid, {
-          text: "Ola"
-        })
+        // await SendMessage(jid, {
+        //   text: "Ola"
+        // })
 
-          .then(result => console.log('RESULT: ', result))
-          .catch(err => console.log('ERROR: ', err))
+        await sock.sendMessage(jid, { text: 'hello word' }, { quoted: message })
+
+          // .then(result => console.log('RESULT: ', result))
+          // .catch(err => console.log('ERROR: ', err))
 
       }
 
