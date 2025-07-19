@@ -103,17 +103,20 @@ const Connection = async (channelId = 'default') => {
       const messageTypes = Object.keys(msg.message);
       const messageType = messageTypes.find((t) => ['conversation', 'stickerMessage', 'videoMessage', 'imageMessage', 'documentMessage', 'locationMessage', 'extendedTextMessage', 'audioMessage'].includes(t));
 
-      let textResponse = "";
+      let textMsg = '';
 
       if (messageType === "extendedTextMessage") {
-        textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.extendedTextMessage.text)], 'pt-BR');
-
+        textMsg = msg.message.extendedTextMessage.text;
       } else if (messageType === "conversation") {
-        textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.conversation)], 'pt-BR');
+        textMsg = msg.message.conversation;
       }
 
-      console.log("Texto da query: ", textResponse);
-      // await SendMessage(jid, { text: "Oie" });
+      if (textMsg) {
+        textResponse = await executeQueries("ID-PROJETO", jid, [textMsg], 'pt-BR');
+      }
+
+
+      console.log("Texto tratado: ", textResponse);
 
       //--------------------
 
