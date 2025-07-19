@@ -151,7 +151,7 @@ const Connection = async (channelId = 'default') => {
             "2 - SAIR"
         })
 
-          .then(result => console.log('RESULT: ', result))
+          .then(result => console.log('Enviado com sucesso!!'))
           .catch(err => console.log('ERROR: ', err))
 
       }
@@ -175,7 +175,7 @@ const Connection = async (channelId = 'default') => {
 
         })
 
-          .then(result => console.log('RESULT: ', result))
+          .then(result => console.log('Enviado com sucesso!!'))
           .catch(err => console.log('ERROR: ', err))
 
       }
@@ -199,7 +199,7 @@ const Connection = async (channelId = 'default') => {
 
         })
 
-          .then(result => console.log('RESULT: ', result))
+          .then(result => console.log('Enviado com sucesso!!'))
           .catch(err => console.log('ERROR: ', err))
 
       }
