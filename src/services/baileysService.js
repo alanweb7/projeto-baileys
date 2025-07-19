@@ -5,14 +5,15 @@ const qrcode = require('qrcode-terminal');
 const logger = require('../utils/logger');
 
 
+
+
 // const fs = require('fs');
 const path = require('path');
 const P = require('pino');
 const fs = require('fs');
 // const { existsSync, mkdirSync } = require('fs');
 
-let socketBaileys = null;
-let estaConectando = false;
+const conectando = new Map();
 
 
 const Update = (sock, channelId) => {
@@ -38,7 +39,6 @@ const Update = (sock, channelId) => {
     }
     if (connection === 'open') {
       logger.info('CHATBOT - CONECTADO');
-      socketBaileys = true;
     }
   })
 }
@@ -70,7 +70,6 @@ const Connection = async (channelId = 'default') => {
   sock.ev.on('creds.update', saveCreds);
   conexoes.set(channelId, sock); // salva instância
 
-  console.log("Fora do enviar mensagem: ");
   const SendMessage = async (jid, msg) => {
     console.log("Enviar mensagem: ", msg);
     await sock.presenceSubscribe(jid)
@@ -108,20 +107,20 @@ const Connection = async (channelId = 'default') => {
 
       let textResponse = "";
 
-      if (messageType === "extendedTextMessage") {
-        textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.extendedTextMessage.text)], 'pt-BR');
+      const textMsg = msg.message?.extendedTextMessage?.text || msg.message?.conversation;
 
-      } else if (messageType === "conversation") {
-        textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.conversation)], 'pt-BR');
+      if (textMsg) {
+        textResponse = await executeQueries("ID-PROJETO", jid, [textMsg], 'pt-BR');
+        triggerMsg = textResponse.query;
       }
 
-      console.log("Texto da query: ", textResponse);
+      console.log("Texto da query: ", triggerMsg);
       // await SendMessage(jid, { text: "Oie" });
 
       //--------------------
 
       // MENSAGEM DE BOAS VINDAS (TEXO COM IMAGEM)
-      if (textResponse.query === '"Mande o PDF"') {
+      if (triggerMsg === '"Mande o PDF"') {
         await SendMessage(jid, {
           image: {
             url: path.resolve(__dirname, '../assets/images/ebook-default.jpg')
@@ -146,7 +145,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM DE TEXO COMUM
-      if (textResponse.query === '"Enviando texto comum..."') {
+      if (triggerMsg === '"Enviando texto comum..."' || triggerMsg === 'Enviando texto comum...') {
         await SendMessage(jid, {
           text: "Ola"
         })
@@ -281,19 +280,11 @@ function getConexao(channelId) {
 
 
 function statusConexao() {
-  return {
-    conectado: !!socketBaileys,
-    emConexao: estaConectando,
-  };
-}
-
-function getSocket() {
-  return socketBaileys;
+  return "T";
 }
 
 module.exports = {
   Connection,
   statusConexao,
-  getSocket,
   getConexao,
 };
