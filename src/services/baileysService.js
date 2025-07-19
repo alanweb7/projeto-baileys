@@ -107,9 +107,9 @@ const Connection = async (channelId = 'default') => {
       let triggerMsg = '';
 
       if (messageType === "extendedTextMessage") {
-        textMsg = msg.message.extendedTextMessage.text;
+        textMsg =  JSON.stringify(msg.message.extendedTextMessage.text);
       } else if (messageType === "conversation") {
-        textMsg = msg.message.conversation;
+        textMsg =  JSON.stringify(msg.message.conversation);
       }
 
       if (textMsg) {
