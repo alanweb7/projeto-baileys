@@ -25,7 +25,7 @@ sock.ev.on('messages.upsert', async ({ messages, type }) => {
       const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
 
       logger.info(`📩 Mensagem de ${from}: ${body}`);
-      delay(500);
+     await delay(500);
 
       // Só envia se estiver conectado
       if (sock?.user && sock?.ws?.readyState === 1) {
