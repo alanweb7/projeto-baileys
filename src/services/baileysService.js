@@ -77,7 +77,7 @@ const Connection = async (channelId = 'default') => {
     await sock.sendPresenceUpdate('composing', jid)
     await delay(1000)
     await sock.sendPresenceUpdate('paused', jid)
-    // return await sock.sendMessage(jid, msg)
+    return await sock.sendMessage(jid, msg)
   }
 
 
@@ -145,11 +145,9 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM DE TEXO COMUM
-      if (textResponse === 'Enviando texto comum...') {
+      if (textResponse === '"Enviando texto comum..."') {
         await SendMessage(jid, {
-          text: `Olá *${nomeUsuario}* ${saudacao} \n Essa é uma mensagem de texto comum\n\n ` +
-            "1 - CONTINUAR \n" +
-            "2 - SAIR"
+          text: `Olá`
         })
 
           .then(result => console.log('RESULT: ', result))
