@@ -29,6 +29,7 @@ const Update = (sock, channelId) => {
       logger.info(`CONEXÃO FECHADA! Code: ` + DisconnectReason.loggedOut.toString());
 
       if (Reconnect === false) {
+        logger.info(`Reconnect...: `);
         const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
         if (fs.existsSync(sessionPath)) {
           fs.rmSync(sessionPath, { recursive: true, force: true });
