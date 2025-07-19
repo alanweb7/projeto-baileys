@@ -70,6 +70,7 @@ const Connection = async (channelId = 'default') => {
   sock.ev.on('creds.update', saveCreds);
   conexoes.set(channelId, sock); // salva instância
 
+  console.log("Fora do enviar mensagem: ");
   const SendMessage = async (jid, msg) => {
     console.log("Enviar mensagem: ", msg);
     await sock.presenceSubscribe(jid)
