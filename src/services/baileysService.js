@@ -7,7 +7,6 @@ const logger = require('../utils/logger');
 
 // const fs = require('fs');
 const path = require('path');
-const Path = 'Sessions';
 const P = require('pino');
 const fs = require('fs');
 // const { existsSync, mkdirSync } = require('fs');
@@ -30,9 +29,9 @@ const Update = (sock, channelId) => {
       logger.info(`CONEXÃO FECHADA! Code: ` + DisconnectReason.loggedOut.toString());
 
       if (Reconnect === false) {
-        const Path = `Sessions/${channelId}`;
-        if (fs.existsSync(Path)) {
-          fs.rmSync(Path, { recursive: true, force: true });
+        const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
+        if (fs.existsSync(sessionPath)) {
+          fs.rmSync(sessionPath, { recursive: true, force: true });
         }
       }
     }
