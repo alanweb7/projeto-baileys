@@ -113,12 +113,14 @@ const Connection = async (channelId = 'default') => {
           textMsg = msg.message?.conversation || '';
         }
 
-        // Remove aspas duplas no início e fim, se existirem
-        textMsg = textMsg.trim().replace(/^"(.*)"$/, '$1');
 
         if (textMsg) {
-          textResponse = await executeQueries("ID-PROJETO", jid, [textMsg], 'pt-BR');
-          triggerMsg = textResponse.query;
+          textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(textMsg)], 'pt-BR');
+
+          // Remove aspas duplas no início e fim, se existirem
+          triggerMsg = textResponse.query.trim().replace(/^"(.*)"$/, '$1');
+
+
         }
       } catch (err) {
         console.error("❌ Erro ao processar mensagem:", err);
