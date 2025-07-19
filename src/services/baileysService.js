@@ -46,7 +46,7 @@ const Update = (sock, channelId) => {
 const conexoes = new Map(); // Guardar instâncias por ID/canal
 
 const Connection = async (channelId = 'default') => {
-  crossOriginIsolated.log("stating......");
+  console.log("stating......");
   const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
   if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
 
