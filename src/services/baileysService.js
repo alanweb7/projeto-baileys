@@ -71,12 +71,13 @@ const Connection = async (channelId = 'default') => {
   conexoes.set(channelId, sock); // salva instância
 
   const SendMessage = async (jid, msg) => {
+    console.log("Enviar mensagem: ", msg);
     await sock.presenceSubscribe(jid)
     await delay(1500)
     await sock.sendPresenceUpdate('composing', jid)
     await delay(1000)
     await sock.sendPresenceUpdate('paused', jid)
-    return await sock.sendMessage(jid, msg)
+    // return await sock.sendMessage(jid, msg)
   }
 
 
