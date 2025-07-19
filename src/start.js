@@ -16,7 +16,7 @@ async function startBaileys() {
 
   sock.ev.on('messages.upsert', ({ messages, type }) => {
 
-    SendMessage("559183763092@s.whatsapp.net", {"text":  "Boa tarde"});
+    SendMessage(sock, "559183763092@s.whatsapp.net", {"text":  "Boa tarde"});
     if (type === 'notify') {
       messages.forEach((msg) => {
         const from = msg.key.remoteJid;
@@ -52,7 +52,7 @@ async function startBaileys() {
 }
 
 
-const SendMessage = async (jid, msg) => {
+const SendMessage = async (sock, jid, msg) => {
   await sock.presenceSubscribe(jid)
   await delay(1500)
   await sock.sendPresenceUpdate('composing', jid)
