@@ -104,6 +104,7 @@ const Connection = async (channelId = 'default') => {
       const messageType = messageTypes.find((t) => ['conversation', 'stickerMessage', 'videoMessage', 'imageMessage', 'documentMessage', 'locationMessage', 'extendedTextMessage', 'audioMessage'].includes(t));
 
       let textMsg = '';
+      let triggerMsg = '';
 
       if (messageType === "extendedTextMessage") {
         textMsg = msg.message.extendedTextMessage.text;
@@ -113,15 +114,12 @@ const Connection = async (channelId = 'default') => {
 
       if (textMsg) {
         textResponse = await executeQueries("ID-PROJETO", jid, [textMsg], 'pt-BR');
+        triggerMsg = textResponse.query;
       }
-
-
-      console.log("Texto tratado: ", textResponse);
-
       //--------------------
 
       // MENSAGEM DE BOAS VINDAS (TEXO COM IMAGEM)
-      if (textResponse.query === '"Mande o PDF"') {
+      if (triggerMsg === '#Enviar menu') {
         await SendMessage(jid, {
           image: {
             url: path.resolve(__dirname, '../assets/images/ebook-default.jpg')
@@ -146,7 +144,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM DE TEXO COMUM
-      if (textResponse === 'Enviando texto comum...') {
+      if (triggerMsg === '#Enviar texto') {
         await SendMessage(jid, {
           text: `Olá *${nomeUsuario}* ${saudacao} \n Essa é uma mensagem de texto comum\n\n ` +
             "1 - CONTINUAR \n" +
@@ -161,7 +159,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM COM ÁUDIO
-      if (textResponse === 'Envio de áudio...') {
+      if (triggerMsg === '#Enviar de áudio') {
         await SendMessage(jid, {
           audio: {
             url: './image/teste.ogg'
@@ -185,7 +183,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM COM VÍDEO
-      if (textResponse === 'Envio de vídeo...') {
+      if (triggerMsg === '#Enviar de vídeo') {
         await SendMessage(jid, {
           video: {
             url: './image/video.mp4'
@@ -209,7 +207,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM COM DOCUMENTO PDF
-      if (textResponse === 'Aqui está um PDF 👇🏼😉') {
+      if (triggerMsg === '#Enviar PDF') {
         await SendMessage(jid, {
           document: {
             url: './image/Divulg-pro.pdf'
@@ -236,7 +234,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM DE LOCALIZAÇÃO
-      if (textResponse === 'Enviando Localização, Aguarde!...') {
+      if (triggerMsg === '#Enviar localização') {
         await SendMessage(jid, { location: { degreesLatitude: -2.917264183502438, degreesLongitude: -41.75231474744193 } }
         )
 
