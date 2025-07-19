@@ -10,13 +10,15 @@ const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
 const fs = require('fs');
-const { existsSync } = require('fs');
+const { existsSync, mkdirSync } = require('fs');
+
+const pastaSessao = path.resolve(__dirname, '../../Sessions');
 
 let socketBaileys = null;
 let estaConectando = false;
 
 
-const Update = (sock, sessionPath) => {
+const Update = (sock) => {
   sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     if (qr) {
       console.log('CHATBOT - Qrcode: ');
@@ -29,8 +31,9 @@ const Update = (sock, sessionPath) => {
       logger.info(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
 
       if (Reconnect === false) {
-        if (existsSync(sessionPath)) {
-          fs.rmSync(sessionPath, { recursive: true, force: true });
+        const Path = 'Sessions'; // ou outro caminho real
+        if (existsSync(Path)) {
+          fs.rmSync(Path, { recursive: true, force: true });
         }
       }
     }
@@ -44,12 +47,17 @@ const Update = (sock, sessionPath) => {
 const conexoes = new Map(); // Guardar instâncias por ID/canal
 
 const Connection = async (channelId = 'default') => {
-  console.log("Instância: ", channelId);
-  const sessionPath = path.resolve(__dirname, `../Sessions/${channelId}`);
-  if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
+  const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
+  if (!existsSync(sessionPath)) mkdirSync(sessionPath, { recursive: true });
 
   const { version } = await fetchLatestBaileysVersion()
-  const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
+
+  // if (!existsSync(Path)) {
+  //   mkdirSync(Path, { recursive: true });
+  // }
+
+  console.log("Instância: ", channelId);
+  const { state, saveCreds } = await useMultiFileAuthState(Path)
 
   const config = {
     auth: state,
@@ -64,7 +72,7 @@ const Connection = async (channelId = 'default') => {
 
   const sock = makeWaSocket(config, { auth: state });
 
-  Update(sock.ev, sessionPath);
+  Update(sock.ev);
 
   sock.ev.on('creds.update', saveCreds);
   conexoes.set(channelId, sock); // salva instância
