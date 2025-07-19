@@ -18,23 +18,28 @@ async function startBaileys() {
   globalSock = sock; // ← atualiza o socket global
 
   // Evento de nova mensagem
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type === 'notify') {
-      for (const msg of messages) {
-        const from = msg.key.remoteJid;
-        const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+sock.ev.on('messages.upsert', async ({ messages, type }) => {
+  if (type === 'notify') {
+    for (const msg of messages) {
+      const from = msg.key.remoteJid;
+      const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
 
-        logger.info(`📩 Mensagem de ${from}: ${body}`);
+      logger.info(`📩 Mensagem de ${from}: ${body}`);
 
-        // Só envia se estiver conectado
-        if (sock?.user && sock?.ws?.readyState === 1) {
+      // Só envia se estiver conectado
+      if (sock?.user && sock?.ws?.readyState === 1) {
+        try {
           await SendMessage(sock, from, { text: 'Boa tarde' });
-        } else {
-          console.log("⚠️ Não foi possível responder. Socket desconectado.");
+        } catch (error) {
+          console.error('❌ Erro ao enviar mensagem:', error);
         }
+      } else {
+        console.log("⚠️ Não foi possível responder. Socket desconectado.");
       }
     }
-  });
+  }
+});
+
 
   // Evento de QR e conexão
   sock.ev.on('connection.update', (update) => {
