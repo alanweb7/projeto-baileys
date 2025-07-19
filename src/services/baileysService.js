@@ -106,16 +106,24 @@ const Connection = async (channelId = 'default') => {
       let textMsg = '';
       let triggerMsg = '';
 
-      if (messageType === "extendedTextMessage") {
-        textMsg =  JSON.stringify(msg.message.extendedTextMessage.text);
-      } else if (messageType === "conversation") {
-        textMsg =  JSON.stringify(msg.message.conversation);
+      try {
+        if (messageType === "extendedTextMessage") {
+          textMsg = msg.message?.extendedTextMessage?.text || '';
+        } else if (messageType === "conversation") {
+          textMsg = msg.message?.conversation || '';
+        }
+
+        // Remove aspas duplas no início e fim, se existirem
+        textMsg = textMsg.trim().replace(/^"(.*)"$/, '$1');
+
+        if (textMsg) {
+          textResponse = await executeQueries("ID-PROJETO", jid, [textMsg], 'pt-BR');
+          triggerMsg = textResponse.query;
+        }
+      } catch (err) {
+        console.error("❌ Erro ao processar mensagem:", err);
       }
 
-      if (textMsg) {
-        textResponse = await executeQueries("ID-PROJETO", jid, [textMsg], 'pt-BR');
-        triggerMsg = textResponse.query;
-      }
       //--------------------
 
       // MENSAGEM DE BOAS VINDAS (TEXO COM IMAGEM)
