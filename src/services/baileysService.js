@@ -10,15 +10,13 @@ const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
 const fs = require('fs');
-const { existsSync, mkdirSync } = require('fs');
-
-const pastaSessao = path.resolve(__dirname, '../../Sessions');
+const { existsSync } = require('fs');
 
 let socketBaileys = null;
 let estaConectando = false;
 
 
-const Update = (sock) => {
+const Update = (sock, sessionPath) => {
   sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     if (qr) {
       console.log('CHATBOT - Qrcode: ');
@@ -31,9 +29,8 @@ const Update = (sock) => {
       logger.info(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
 
       if (Reconnect === false) {
-        const Path = 'Sessions'; // ou outro caminho real
-        if (existsSync(Path)) {
-          fs.rmSync(Path, { recursive: true, force: true });
+        if (existsSync(sessionPath)) {
+          fs.rmSync(sessionPath, { recursive: true, force: true });
         }
       }
     }
@@ -52,12 +49,7 @@ const Connection = async (channelId = 'default') => {
   if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
 
   const { version } = await fetchLatestBaileysVersion()
-
-  // if (!existsSync(Path)) {
-  //   mkdirSync(Path, { recursive: true });
-  // }
-
-  const { state, saveCreds } = await useMultiFileAuthState(Path)
+  const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
 
   const config = {
     auth: state,
@@ -72,7 +64,7 @@ const Connection = async (channelId = 'default') => {
 
   const sock = makeWaSocket(config, { auth: state });
 
-  Update(sock.ev);
+  Update(sock.ev, sessionPath);
 
   sock.ev.on('creds.update', saveCreds);
   conexoes.set(channelId, sock); // salva instância
