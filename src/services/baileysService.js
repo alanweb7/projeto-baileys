@@ -16,6 +16,7 @@ const pastaSessao = path.resolve(__dirname, '../../Sessions');
 
 let socketBaileys = null;
 let estaConectando = false;
+let SessionChannelId = 'default';
 
 
 const Update = (sock) => {
@@ -31,7 +32,7 @@ const Update = (sock) => {
       logger.info(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
 
       if (Reconnect === false) {
-        const Path = 'Sessions'; // ou outro caminho real
+        const Path = `Sessions/${SessionChannelId}`;
         if (existsSync(Path)) {
           fs.rmSync(Path, { recursive: true, force: true });
         }
@@ -47,6 +48,7 @@ const Update = (sock) => {
 const conexoes = new Map(); // Guardar instâncias por ID/canal
 
 const Connection = async (channelId = 'default') => {
+  SessionChannelId = channelId;
   const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
   if (!existsSync(sessionPath)) mkdirSync(sessionPath, { recursive: true });
 
@@ -56,7 +58,7 @@ const Connection = async (channelId = 'default') => {
   //   mkdirSync(Path, { recursive: true });
   // }
 
-  console.log("Instância: ", channelId);
+  console.log("Instância: ", SessionChannelId);
   const { state, saveCreds } = await useMultiFileAuthState(Path)
 
   const config = {
