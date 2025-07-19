@@ -17,9 +17,9 @@ let estaConectando = false;
 
 const Update = (sock, channelId) => {
   sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
-     console.log("Instância dentro do Update: ", channelId);
+    console.log("Instância: ", channelId);
     if (qr) {
-      console.log('CHATBOT - Qrcode: ');
+      console.log('Qrcode: ');
       qrcode.generate(qr, { small: true });
     };
     if (connection === 'close') {
@@ -49,8 +49,6 @@ const Connection = async (channelId = 'default') => {
   if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
 
   const { version } = await fetchLatestBaileysVersion()
-
-  console.log("Instância: ", channelId);
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
 
   const config = {
@@ -65,6 +63,7 @@ const Connection = async (channelId = 'default') => {
 
   const sock = makeWaSocket(config, { auth: state });
 
+  // eventos da conexão
   Update(sock.ev, channelId);
 
   sock.ev.on('creds.update', saveCreds);
