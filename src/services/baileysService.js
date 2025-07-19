@@ -11,76 +11,81 @@ const logger = require('../utils/logger');
 const path = require('path');
 const P = require('pino');
 const fs = require('fs');
+
+
+
+const { unlink, existsSync, mkdirSync } = require('fs')
+const Path = 'Sessions';
+
+
 // const { existsSync, mkdirSync } = require('fs');
 
 const conectando = new Map();
 
 
-const Update = (sock, channelId = "mensagens") => {
-  sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
-    console.log("Instância: ", channelId);
-    if (qr) {
-      console.log('Qrcode: ');
-      qrcode.generate(qr, { small: true });
-    };
-    if (connection === 'close') {
-      const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
-      if (Reconnect) Connection(channelId);
 
-      logger.info(`CONEXÃO FECHADA! Code: ` + DisconnectReason.loggedOut.toString());
-
-      if (Reconnect === false) {
-        logger.info(`Reconnect...: `);
-        const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
-        if (fs.existsSync(sessionPath)) {
-          fs.rmSync(sessionPath, { recursive: true, force: true });
-        }
+const Update = (sock) => {
+   sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
+      if (qr) {
+         console.log('CHATBOT - Qrcode: ', qr);
+      };
+      if (connection === 'close') {
+         const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
+         if (Reconnect) Connection()
+         console.log(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
+         if (Reconnect === false) {
+            fs.rmSync(Path, { recursive: true, force: true });
+            const removeAuth = Path
+            unlink(removeAuth, err => {
+               if (err) throw err
+            })
+         }
       }
-    } 
-    if (connection === 'open') {
-      logger.info('CHATBOT - CONECTADO');
-    }
-  })
+      if (connection === 'open') {
+         console.log('CHATBOT - CONECTADO')
+      }
+   })
 }
 
 const conexoes = new Map(); // Guardar instâncias por ID/canal
 
 const Connection = async (channelId = 'mensagens') => {
   console.log("stating......");
-  const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
-  if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
-
-  const { version } = await fetchLatestBaileysVersion()
-  const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
-
-  const config = {
-    auth: state,
-    logger: P({ level: 'error' }),
-    version,
-    async getMessage(key) {
-      return { conversation: 'Chatbot' };
-    },
-  }
-
-  const sock = makeWaSocket(config, { auth: state });
-
-  // eventos da conexão
-  Update(sock.ev, channelId);
-
-  sock.ev.on('creds.update', saveCreds);
-  conexoes.set(channelId, sock); // salva instância
-
-  const SendMessage = async (jid, msg) => {
-    console.log("Enviar mensagem: ", msg);
-    await sock.presenceSubscribe(jid)
-    await delay(1500)
-    await sock.sendPresenceUpdate('composing', jid)
-    await delay(1000)
-    await sock.sendPresenceUpdate('paused', jid)
-    return await sock.sendMessage(jid, msg)
-  }
-
-
+     const { version } = await fetchLatestBaileysVersion();
+  
+     if (!existsSync(Path)) {
+        mkdirSync(Path, { recursive: true });
+     }
+  
+     const { state, saveCreds } = await useMultiFileAuthState(Path);
+  
+     const config = {
+        auth: state,
+        logger: P({ level: 'error' }),
+        printQRInTerminal: true,
+        version,
+        connectTimeoutMs: 60_000,
+        async getMessage(key) {
+           return { conversation: 'Chatbot' };
+        },
+     };
+  
+     const sock = makeWaSocket(config, { auth: state });
+  
+     Update(sock.ev);
+  
+     sock.ev.on('creds.update', saveCreds);
+  
+     const SendMessage = async (jid, msg) => {
+        await sock.presenceSubscribe(jid)
+        await delay(1500)
+        await sock.sendPresenceUpdate('composing', jid)
+        await delay(1000)
+        await sock.sendPresenceUpdate('paused', jid)
+        return await sock.sendMessage(jid, msg)
+     };
+  
+  
   ////SAUDAÇÃO
   let date = new Date();
   let data = date.toLocaleString('pt-BR', { timeZone: "America/Sao_Paulo", hour: 'numeric', hour12: false });
