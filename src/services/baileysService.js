@@ -103,33 +103,22 @@ const Connection = async (channelId = 'default') => {
       const messageTypes = Object.keys(msg.message);
       const messageType = messageTypes.find((t) => ['conversation', 'stickerMessage', 'videoMessage', 'imageMessage', 'documentMessage', 'locationMessage', 'extendedTextMessage', 'audioMessage'].includes(t));
 
-      let textMsg = '';
-      let triggerMsg = '';
+      let textResponse = "";
 
-      try {
-        if (messageType === "extendedTextMessage") {
-          textMsg = msg.message?.extendedTextMessage?.text || '';
-        } else if (messageType === "conversation") {
-          textMsg = msg.message?.conversation || '';
-        }
+      if (messageType === "extendedTextMessage") {
+        textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.extendedTextMessage.text)], 'pt-BR');
 
-
-        if (textMsg) {
-          textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(textMsg)], 'pt-BR');
-
-          // Remove aspas duplas no início e fim, se existirem
-          triggerMsg = textResponse.query.trim().replace(/^"(.*)"$/, '$1');
-
-
-        }
-      } catch (err) {
-        console.error("❌ Erro ao processar mensagem:", err);
+      } else if (messageType === "conversation") {
+        textResponse = await executeQueries("ID-PROJETO", jid, [JSON.stringify(msg.message.conversation)], 'pt-BR');
       }
+
+      console.log("Texto da query: ", textResponse);
+      // await SendMessage(jid, { text: "Oie" });
 
       //--------------------
 
       // MENSAGEM DE BOAS VINDAS (TEXO COM IMAGEM)
-      if (triggerMsg === '#Enviar menu') {
+      if (textResponse.query === '"Mande o PDF"') {
         await SendMessage(jid, {
           image: {
             url: path.resolve(__dirname, '../assets/images/ebook-default.jpg')
@@ -154,14 +143,14 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM DE TEXO COMUM
-      if (triggerMsg === '#Enviar texto') {
+      if (textResponse === 'Enviando texto comum...') {
         await SendMessage(jid, {
           text: `Olá *${nomeUsuario}* ${saudacao} \n Essa é uma mensagem de texto comum\n\n ` +
             "1 - CONTINUAR \n" +
             "2 - SAIR"
         })
 
-          .then(result => console.log('Enviado com sucesso!!'))
+          .then(result => console.log('RESULT: ', result))
           .catch(err => console.log('ERROR: ', err))
 
       }
@@ -169,7 +158,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM COM ÁUDIO
-      if (triggerMsg === '#Enviar de áudio') {
+      if (textResponse === 'Envio de áudio...') {
         await SendMessage(jid, {
           audio: {
             url: './image/teste.ogg'
@@ -185,7 +174,7 @@ const Connection = async (channelId = 'default') => {
 
         })
 
-          .then(result => console.log('Enviado com sucesso!!'))
+          .then(result => console.log('RESULT: ', result))
           .catch(err => console.log('ERROR: ', err))
 
       }
@@ -193,7 +182,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM COM VÍDEO
-      if (triggerMsg === '#Enviar de vídeo') {
+      if (textResponse === 'Envio de vídeo...') {
         await SendMessage(jid, {
           video: {
             url: './image/video.mp4'
@@ -209,7 +198,7 @@ const Connection = async (channelId = 'default') => {
 
         })
 
-          .then(result => console.log('Enviado com sucesso!!'))
+          .then(result => console.log('RESULT: ', result))
           .catch(err => console.log('ERROR: ', err))
 
       }
@@ -217,7 +206,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM COM DOCUMENTO PDF
-      if (triggerMsg === '#Enviar PDF') {
+      if (textResponse === 'Aqui está um PDF 👇🏼😉') {
         await SendMessage(jid, {
           document: {
             url: './image/Divulg-pro.pdf'
@@ -244,7 +233,7 @@ const Connection = async (channelId = 'default') => {
       //--------------------
 
       // MENSAGEM DE LOCALIZAÇÃO
-      if (triggerMsg === '#Enviar localização') {
+      if (textResponse === 'Enviando Localização, Aguarde!...') {
         await SendMessage(jid, { location: { degreesLatitude: -2.917264183502438, degreesLongitude: -41.75231474744193 } }
         )
 
