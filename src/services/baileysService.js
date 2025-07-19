@@ -147,7 +147,7 @@ const Connection = async (channelId = 'default') => {
       // MENSAGEM DE TEXO COMUM
       if (textResponse.query === '"Enviando texto comum..."') {
         await SendMessage(jid, {
-          text: `Olá`
+          text: "Ola"
         })
 
           .then(result => console.log('RESULT: ', result))
