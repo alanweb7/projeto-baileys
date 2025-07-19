@@ -44,15 +44,19 @@ const Update = (sock) => {
   })
 }
 
+const conexoes = new Map(); // Guardar instâncias por ID/canal
 
-const Connection = async (req) => {
+const Connection = async (channelId = 'default') => {
+  console.log("Instância: ", channelId);
+  const sessionPath = path.resolve(__dirname, `../Sessions/${channelId}`);
+  if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
+
   const { version } = await fetchLatestBaileysVersion()
 
-  if (!existsSync(Path)) {
-    mkdirSync(Path, { recursive: true });
-  }
+  // if (!existsSync(Path)) {
+  //   mkdirSync(Path, { recursive: true });
+  // }
 
-  console.log("Instância: ", req);
   const { state, saveCreds } = await useMultiFileAuthState(Path)
 
   const config = {
@@ -71,6 +75,7 @@ const Connection = async (req) => {
   Update(sock.ev);
 
   sock.ev.on('creds.update', saveCreds);
+  conexoes.set(channelId, sock); // salva instância
 
   const SendMessage = async (jid, msg) => {
     await sock.presenceSubscribe(jid)
@@ -277,6 +282,11 @@ async function executeQueries(projectId, sessionId, queries, languageCode) {
 }
 
 
+function getConexao(channelId) {
+  return conexoes.get(channelId);
+}
+
+
 function statusConexao() {
   return {
     conectado: !!socketBaileys,
@@ -292,4 +302,5 @@ module.exports = {
   Connection,
   statusConexao,
   getSocket,
+  getConexao,
 };
