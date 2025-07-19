@@ -150,7 +150,7 @@ const Connection = async (channelId = 'default') => {
         //   text: "Ola"
         // })
 
-        await sock.sendMessage(jid, { text: 'hello word' }, { quoted: message })
+        await sock.sendMessage(jid, { text: 'hello word' }, { quoted: "message" })
 
           // .then(result => console.log('RESULT: ', result))
           // .catch(err => console.log('ERROR: ', err))
