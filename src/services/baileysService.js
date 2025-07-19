@@ -10,9 +10,7 @@ const path = require('path');
 const Path = 'Sessions';
 const P = require('pino');
 const fs = require('fs');
-const { existsSync, mkdirSync } = require('fs');
-
-const pastaSessao = path.resolve(__dirname, '../../Sessions');
+// const { existsSync, mkdirSync } = require('fs');
 
 let socketBaileys = null;
 let estaConectando = false;
@@ -29,11 +27,11 @@ const Update = (sock, channelId) => {
       const Reconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
       if (Reconnect) Connection(channelId);
 
-      logger.info(`CHATBOT - CONEXÃO FECHADA! RAZÃO: ` + DisconnectReason.loggedOut.toString());
+      logger.info(`CONEXÃO FECHADA! Code: ` + DisconnectReason.loggedOut.toString());
 
       if (Reconnect === false) {
         const Path = `Sessions/${channelId}`;
-        if (existsSync(Path)) {
+        if (fs.existsSync(Path)) {
           fs.rmSync(Path, { recursive: true, force: true });
         }
       }
@@ -49,13 +47,9 @@ const conexoes = new Map(); // Guardar instâncias por ID/canal
 
 const Connection = async (channelId = 'default') => {
   const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
-  if (!existsSync(sessionPath)) mkdirSync(sessionPath, { recursive: true });
+  if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
 
   const { version } = await fetchLatestBaileysVersion()
-
-  // if (!existsSync(Path)) {
-  //   mkdirSync(Path, { recursive: true });
-  // }
 
   console.log("Instância: ", channelId);
   const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
@@ -63,7 +57,6 @@ const Connection = async (channelId = 'default') => {
   const config = {
     auth: state,
     logger: P({ level: 'error' }),
-    // printQRInTerminal: true,
     version,
     connectTimeoutMs: 60_000,
     async getMessage(key) {
