@@ -48,9 +48,10 @@ app.get('/api/conn/qrcode', async (req, res) => {
   res.json({ qr });
 });
 
-app.get('/api/conn/start-whatsapp', async (req, res) => {
-  await baileysService.Connection();
-  res.json({ status: 'Iniciando conexão com WhatsApp...' });
+app.get('/api/conn/start-whatsapp/:instanceName', async (req, res) => {
+  const instance = req.params.instanceName;
+  // await baileysService.Connection(instance);
+  res.json({ status: 'Iniciando conexão com WhatsApp...', instance });
 });
 
 app.get('/api/conn/status-whatsapp', (req, res) => {
