@@ -58,7 +58,7 @@ const Connection = async (channelId = 'default') => {
   // }
 
   console.log("Instância: ", channelId);
-  const { state, saveCreds } = await useMultiFileAuthState(Path)
+  const { state, saveCreds } = await useMultiFileAuthState(sessionPath)
 
   const config = {
     auth: state,
