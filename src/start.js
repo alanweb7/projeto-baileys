@@ -4,32 +4,42 @@ const P = require('pino');
 
 const logger = require('./utils/logger');
 
+let globalSock = null; // ← guarda o socket atual
+
 async function startBaileys() {
   const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
 
   const sock = makeWASocket({
     auth: state,
-    printQRInTerminal: false, // vamos imprimir manualmente
-    logger: P({ level: 'silent' }) // menos poluição no terminal
+    printQRInTerminal: false,
+    logger: P({ level: 'silent' }),
   });
 
+  globalSock = sock; // ← atualiza o socket global
 
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
-
-    SendMessage(sock, "559183763092@s.whatsapp.net", {"text":  "Boa tarde"});
+  // Evento de nova mensagem
+  sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type === 'notify') {
-      messages.forEach((msg) => {
+      for (const msg of messages) {
         const from = msg.key.remoteJid;
         const body = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
 
         logger.info(`📩 Mensagem de ${from}: ${body}`);
-      });
+
+        // Só envia se estiver conectado
+        if (sock?.user && sock?.ws?.readyState === 1) {
+          await SendMessage(sock, from, { text: 'Boa tarde' });
+        } else {
+          console.log("⚠️ Não foi possível responder. Socket desconectado.");
+        }
+      }
     }
   });
 
-  // Exibe QR Code quando necessário
+  // Evento de QR e conexão
   sock.ev.on('connection.update', (update) => {
     const { connection, qr } = update;
+
     if (qr) {
       console.log('📱 Escaneie o QR Code com o WhatsApp:');
       qrcode.generate(qr, { small: true });
@@ -51,14 +61,22 @@ async function startBaileys() {
   sock.ev.on('creds.update', saveCreds);
 }
 
-
+// Função segura para envio de mensagens
 const SendMessage = async (sock, jid, msg) => {
-  await sock.presenceSubscribe(jid)
-  await delay(1500)
-  await sock.sendPresenceUpdate('composing', jid)
-  await delay(1000)
-  await sock.sendPresenceUpdate('paused', jid)
-  return await sock.sendMessage(jid, msg)
+  try {
+    if (sock?.user && sock?.ws?.readyState === 1) {
+      await sock.presenceSubscribe(jid);
+      await delay(1500);
+      await sock.sendPresenceUpdate('composing', jid);
+      await delay(1000);
+      await sock.sendPresenceUpdate('paused', jid);
+      return await sock.sendMessage(jid, msg);
+    } else {
+      console.log("⚠️ Tentativa de envio com socket fechado.");
+    }
+  } catch (err) {
+    console.error("❌ Erro ao enviar mensagem:", err.message);
+  }
 };
 
 startBaileys();
