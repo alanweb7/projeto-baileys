@@ -16,7 +16,7 @@ const fs = require('fs');
 const conectando = new Map();
 
 
-const Update = (sock, channelId) => {
+const Update = (sock, channelId = "mensagens") => {
   sock.on('connection.update', ({ connection, lastDisconnect, qr }) => {
     console.log("Instância: ", channelId);
     if (qr) {
@@ -36,7 +36,7 @@ const Update = (sock, channelId) => {
           fs.rmSync(sessionPath, { recursive: true, force: true });
         }
       }
-    }
+    } 
     if (connection === 'open') {
       logger.info('CHATBOT - CONECTADO');
     }
@@ -45,7 +45,7 @@ const Update = (sock, channelId) => {
 
 const conexoes = new Map(); // Guardar instâncias por ID/canal
 
-const Connection = async (channelId = 'default') => {
+const Connection = async (channelId = 'mensagens') => {
   console.log("stating......");
   const sessionPath = path.resolve(__dirname, `../../Sessions/${channelId}`);
   if (!fs.existsSync(sessionPath)) fs.mkdirSync(sessionPath, { recursive: true });
